@@ -1,0 +1,30 @@
+clear all
+close all
+cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework'
+
+%% Task (b)
+%% Design variables
+% Baseline stats:
+Ar_bl=7.5;
+Sw_bl=16;
+lambda_bl=0.4;
+CL_bl=0.342;
+CD_bl=0.0147;
+CDv_bl=0.0056;
+CDvis_bl=0.0091;
+LDR_bl=23.3;
+
+% Design variables (normalised)
+Ar=2.5/Ar_bl;
+Sw=/Sw_bl;
+lambda=lambda_bl;
+
+A1=0.00;
+A2=0.00;
+A3=0.00;
+A4=0.00;
+%% Constraints
+MaxEvalN=120; % We only have a total budget of 120 function evaluations
+
+%% Test if wing design module is working
+Wing_Design([])
