@@ -143,8 +143,8 @@ for gen = 1:Gens
         end
     end
         
-    disp(['Generating and evaluating the individuals in gen. ',...
-        num2str(gen)])
+    %disp(['Generating and evaluating the individuals in gen. ',...
+        %num2str(gen)])
 	
     NEWPOP = {};
 	NEWPOPfit = NaN*ones(1,Popsize);

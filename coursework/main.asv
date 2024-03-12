@@ -128,6 +128,7 @@ cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_D
 CD=Wing_Design([VARS,A1,A2,A3,A4]);
 %}
 
+HybridSearchPrototype
 %% Functions
 
 function normVal = getNormVal(absVal,bounds)
@@ -200,7 +201,51 @@ function res=getResidual(O1)
 end
 
 function S1 = mishra_harit_algorithm(P1, P2, O1, O2)
+    % Combine parameters and objective functions into one matrix
+    P = [P1, P2, O1, O2];
 
+    % Step 1: Sort solutions in decreasing order of their first objective function (O1)
+    [~, idx] = sort(P(:, 3), 'descend');
+    O = P(idx, :);
+
+    % Step 2: Initialize set S1 with the first element of list O
+    S1 = {O(1, :)};
+
+    % Step 3: Iterate through solutions in list O (starting from the second solution)
+    for i = 2:size(O, 1)
+        Oi = O(i, :);
+
+        % Flag to indicate if Oi is dominated
+        dominated = false;
+
+        % Iterate through solutions in set S1
+        for j = 1:numel(S1)
+            Si = S1{j};
+
+            % Check dominance relationship using both objective functions O1 and O2
+            if all(Oi(3:4) <= Si(3:4)) && any(Oi(3:4) < Si(3:4))
+                % Oi is dominated by Si, so mark it as dominated
+                dominated = true;
+                break;
+            elseif all(Oi(3:4) >= Si(3:4)) && any(Oi(3:4) > Si(3:4))
+                % Oi dominates Si, so remove Si from S1
+                S1(j) = [];
+                % Update j to account for the removed element
+                j = j - 1;
+            end
+        end
+
+        % If Oi is non-dominated, add it to set S1
+        if ~dominated
+            S1{end + 1} = Oi;
+        end
+    end
+
+    % Step 4: Print non-dominated set S1
+    disp('Non-dominated set S1:');
+    for i = 1:numel(S1)
+        disp(S1{i});
+    end
 end
 
 
