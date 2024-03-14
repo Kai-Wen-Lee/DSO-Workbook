@@ -1,7 +1,8 @@
 clear all
 close all
+cd 'D:\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework'
 
-cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework'
+%cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework'
 Test_Function1([0.25;0.5]) %check if PATH is set correctly
 
 %% Test function 1
@@ -37,7 +38,7 @@ zlabel('f(x)');
 
 %% Test function 3
 %Global search
-GAOptions=gaoptimset('PopultionSize',20,'Generations',6);
+GAOptions=gaoptimset('PopultionSize',98,'Generations',2);
 [bestvar5,bestobj5,history5,eval_count5]=ga(@Test_Function3,6,[],[],[],[],[0,0,0,0,0,0],[1,1,1,1,1,1],[],GAOptions);
 
 % Local search

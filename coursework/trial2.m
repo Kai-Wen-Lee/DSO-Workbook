@@ -33,7 +33,7 @@ filename='TestFunc3GlobalObjVal2.mat';
 
 % Find rows with any empty cells
 %cd 'D:\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework\Data\RUN3'
-%cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework\Data\RUN3'
+cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework\Data\RUN3'
 load(filename, 'dataTable')
 emptyRows = any(cellfun(@isempty, table2cell(dataTable)), 2);
 
@@ -151,7 +151,9 @@ RowIDX=find(ismember(O1MAT3,ParetoOptimalTest3,'rows'));
 poptimalObjVal3=aTestFunc3GlobalObjVal(RowIDX,1);
 poptimalPop3=aTestFunc3GlobalObjVal(RowIDX,3);
 poptimalGen3=aTestFunc3GlobalObjVal(RowIDX,2);
+%% Determine best generation and population for GA
 
+%% Run Wind_Design based on best generation count, population and GA-TO-SIMPLEX evaluation ratio
 
 %%
 %{
@@ -240,6 +242,8 @@ function resultarr=getGlobalObjVal(func,maxn,lb,ub,popsweep,gasweep,repn,filenam
     genarr_ = cell(popsweep, gasweep);
     poparr_ = cell(popsweep, gasweep);
     % Collect data
+    pool=parpool(4);
+    tic
     parfor i = 1:popsweep
         for j = 1:gasweep
             % Run 'repn' times per ga and pop combo
@@ -247,13 +251,12 @@ function resultarr=getGlobalObjVal(func,maxn,lb,ub,popsweep,gasweep,repn,filenam
                 objvalarr_{i, j}{count} = HybridSearchPrototype(func,i,j,maxn,lb,ub);
                 genarr_{i, j}{count} = j;
                 poparr_{i, j}{count} = i;
-                disp(['i:  ', num2str(i), '  j:    ', num2str(j), ' count   ',num2str(count)])
             end
-            disp(['i:  ', num2str(i), '  j:    ', num2str(j), ' count   ',num2str(count)])
         end
     disp(['i:  ', num2str(i), '  j:    ', num2str(j), ' count   ',num2str(count)])
     end
-
+    toc
+    mpiprofile viewer
    % Flatten cell arrays into column vectors
     objval_col = cellfun(@(x) x(:), objvalarr_, 'UniformOutput', false);
     objval_col = cat(1, objval_col{:});
@@ -283,12 +286,11 @@ function bestobj2 = HybridSearchPrototype(func, pop, gen, MaxEvalCount, LB, UB)
     % Global search
     GAOptions = gaoptimset('PopulationSize', pop, 'Generations', gen);
     [bestvars, ~, ~, eval_count] = ga(func, 6, [], [], [], [], LB, UB, [], GAOptions);
-    
+    disp(eval_count)
     % Check if eval_count exceeds 120
     if eval_count > 120
         return; % Terminate function execution
     end
-    
     % Calculate simplexcount
     simplexcount = MaxEvalCount - eval_count;
     
