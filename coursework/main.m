@@ -26,7 +26,7 @@ UB=[1,1,1,1,1,1];
 
 % Get all objective value of test function 3 and save to a .mat file
 filename='TestFunc3GlobalObjVal2.mat';
-%getGlobalObjVal(@Test_Function3,MaxEvalN,LB,UB,100,2,10,filename)
+getGlobalObjVal(@Test_Function3,MaxEvalN,LB,UB,120,120,10,filename)
 
 %% Load all objective values and filter out empty rows
 % Run this cell ONLY after evaluating all possible Objective Values of TestFunction 3
@@ -152,18 +152,55 @@ poptimalObjVal3=aTestFunc3GlobalObjVal(RowIDX,1);
 poptimalPop3=aTestFunc3GlobalObjVal(RowIDX,3);
 poptimalGen3=aTestFunc3GlobalObjVal(RowIDX,2);
 
+%% Decide which Pareto optimal set to use
+optPop=poptimalPop3;
+optGen=poptimalGen3;
 
+%% Run Wing Design
+
+ArBounds=[6,12];
+SwBounds=[14,20];
+TrBounds=[0.2,1.0];
+A1Bounds=[-0.01,0.01];
+A2Bounds=[-0.01,0.01];
+A3Bounds=[-0.01,0.01];
+A4Bounds=[-0.01,0.01];
+lb=[0,0,0,0,0,0,0];
+ub=[1,1,1,1,1,1,1];
+
+% Baseline stats:
+Ar_bl=7.5;
+Sw_bl=16;
+TR_bl=0.4;
+CL_bl=0.342;
+CD_bl=0.0147;
+CDv_bl=0.0056;
+CDvis_bl=0.0091;
+LDR_bl=23.3;
+
+% Design variables (normalised)
+Ar=getNormVal(Ar_bl,ArBounds);
+Sw=getNormVal(Sw_bl,SwBounds);
+TR=getNormVal(TR_bl,TrBounds);
+
+A1=0.50;
+A2=0.50;
+A3=0.50;
+A4=0.50;
+
+cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework\Wing Design'
+cdfun=@(VARS)Wing_Design(VARS);
+
+[vars,obj_cd]=HybridSearch(cdfun,optPop,optGen,7,MaxEvalN,lb,ub);
+filename2="TaskaWingDesign.mat";
+save(filename2,"vars","obj_cd","-mat");
+%run1
+%vars=[0.993040941467052,0.999634607270934,1.844869840607055e-04]
+%objcd=0.011632420318577
 %%
 %{
 %% Task (b)
-%{
-    Wing_Design.p       -> Gets CD
-    Wing_Design_Info.p  -> Gets CD and graphics
 
-    Tasks:
-        1. Perform design optimisation of light aircraft wing.
-            - Starting from a shit box, try to get a Ferrari
-%}
 %% Constraints
 %{
     AR          between 6 and 12
@@ -180,27 +217,7 @@ A2Bounds=[-0.01,0.01];
 A3Bounds=[-0.01,0.01];
 A4Bounds=[-0.01,0.01];
 
-%% Design variables
-% Baseline stats:
-Ar_bl=7.5;
-Sw_bl=16;
-TR_bl=0.4;
-CL_bl=0.342;
-CD_bl=0.0147;
-CDv_bl=0.0056;
-CDvis_bl=0.0091;
-LDR_bl=23.3;
 
-% Design variables (normalised)
-Ar=getNormVal(Ar_bl,ArBounds);
-Sw=getNormVal(Sw_bl,SwBounds);
-TR=getNormVal(TR_bl,TrBounds);
-VARS=[Ar,Sw,TR];
-
-A1=0.50;
-A2=0.50;
-A3=0.50;
-A4=0.50;
 
 %% Test if wing design module is working
 cd 'C:\Users\Kai Wen Lee\OneDrive - University of Southampton\UoS_2023_24\FEEG_DSO\Workbook\DSO-Workbook\coursework'\'Wing Design'\
@@ -328,3 +345,18 @@ function pfront=pareto_frontier(inputmat,maxX,maxY)
 
 end
 
+function [bestvars2,bestobj2] = HybridSearch(func, pop, gen, numvars,MaxEvalCount, LB, UB)
+    bestobj2 = [];
+    % Global search
+    GAOptions = gaoptimset('PopulationSize', pop, 'Generations', gen);
+    [bestvars, ~, ~, eval_count] = ga(func, numvars, [], [], [], [], LB, UB, [], GAOptions);
+    % Check if eval_count exceeds 120
+    if eval_count > 120
+        return; % Terminate function execution
+    end
+    % Calculate simplexcount
+    simplexcount = MaxEvalCount - eval_count;
+    % Local search
+    options = optimset('MaxFunEvals', simplexcount);
+    [bestvars2, bestobj2] = fminsearchcon(func, bestvars, LB, UB, [], [], [], options);
+end
